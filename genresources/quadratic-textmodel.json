@@ -1,0 +1,28 @@
+{
+    "solveQuadratic": {
+        "argtypes" : {
+            "a": "Double",
+            "b": "Double",
+            "c": "Double"
+        },
+        "cf_relations": [
+            {
+                "43": {
+                    "conditions": [">"],
+                    "leftoperand": "b*b - 4*a*c",
+                    "rightoperand": 0
+                }
+            },
+            {
+                "39": {
+                    "conditions": ["=="],
+                    "operand": "b*b - 4*a*c",
+                    "rightoperand": "b*b"
+                }
+            } 
+        ],
+        "out_relation": [
+        ],
+        "throws": ["ArithmeticException"]
+    }
+}

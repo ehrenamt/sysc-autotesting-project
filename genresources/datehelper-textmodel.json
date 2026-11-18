@@ -1,0 +1,12 @@
+{
+    "prettifyDate": {
+        "argtypes" : {
+            "timestamp": "Long"
+        },
+        "cf_relations": [
+          ],
+        "out_relation": [
+        ],
+        "throws": ["ArithmeticException"]
+    }
+}

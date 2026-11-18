@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'info.solidsoft.pitest' version '1.19.0'
+}
+
+dependencies {
+    // JUnit imports for Quadratic and DateHelper
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.0'
+    testImplementation ('org.junit-pioneer:junit-pioneer:2.3.0') {
+        capabilities {
+            requireCapability('org.junit-pioneer:junit-pioneer-jackson')
+        }
+    }
+    testImplementation 'tools.jackson.core:jackson-databind:3.0.3'
+    'com.fasterxml.jackson.core:jackson-databind:2.18.2' // note: need Jackson v2 since we are using pioneer v2.x
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.0'
+
+    // For the static parser
+    // implementation 'com.github.javaparser:javaparser-core:3.28.2'
+    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.28.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// forgot why this was needed below but JaCoCo doesn't seem to work without this?
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+pitest {
+    targetClasses = ['sysc.*']
+    junit5PluginVersion = '1.2.2' // latest, see https://github.com/pitest/pitest-junit5-plugin
+    timestampedReports = false
+}

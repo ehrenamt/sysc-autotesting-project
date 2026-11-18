@@ -1,0 +1,20 @@
+# gradle and dependencies
+.gradle
+tools
+
+# project-specific directories and files
+.idea
+.venv
+draft*
+temp
+tempsrc
+
+# project-specific but for compilation
+local.properties
+
+
+# outputs
+build
+
+# other
+code.iml
