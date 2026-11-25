@@ -1,12 +1,29 @@
 {
-    "prettifyDate": {
+    "getDateOnly": {
         "argtypes" : {
-            "timestamp": "Long"
+            "time": "long"
         },
         "cf_relations": [
           ],
-        "out_relation": [
-        ],
-        "throws": ["ArithmeticException"]
+        "out_relation": [],
+        "throws": []
+    },
+    "getDateAndTime": {
+        "overloadIdx": 0,
+        "argtypes" : {
+            "time": "long"
+        },
+        "cf_relations": [],
+        "out_relation": [],
+        "throws": []
+    },
+    "getDateAndTime": {
+        "overloadIdx": 1,
+        "argtypes" : {
+            "time": "longStr"
+        },
+        "cf_relations": [],
+        "out_relation": [],
+        "throws": []
     }
 }

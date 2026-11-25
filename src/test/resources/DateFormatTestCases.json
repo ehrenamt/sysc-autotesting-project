@@ -1,0 +1,4 @@
+[
+  { "dateStr": "20-10-25", "expectedFormat": "D_DDMMyy" },
+  { "dateStr": "20/10/25", "expectedFormat": "S_DDMMyy" }
+]

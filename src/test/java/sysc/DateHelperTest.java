@@ -2,8 +2,14 @@
  * QuadraticTest.java
  *
  * Most tests included are metamorphic, because these are not systematically
- * or automatically recognized and generated. Each metamorphic test contains a 
+ * or automatically recognized and generated. Each metamorphic test contains a
  * docstring which describes the relation being tested.
+ *
+ * NOTE:
+ * Certain tests fail because of discovered errors in DateHelper.java.
+ * These failing tests will cause pitest to fail.
+ * Comment out the failing tests (as shown in the test report) in order to run
+ * pitest and view the pitest report.
 */
 
 package sysc;
@@ -11,6 +17,9 @@ package sysc;
 // Java inbuilt imports
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Calendar;
 import java.util.Date;
@@ -18,6 +27,7 @@ import java.util.Date;
 // JUnit imports
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import org.junitpioneer.jupiter.json.Property;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junitpioneer.jupiter.json.JsonClasspathSource;
@@ -29,21 +39,6 @@ import static sysc.DateHelper.parseDate;
 
 public class DateHelperTest {
 
-    // -------------------------------------------------------------------------
-    //                          Combinatorial Tests
-    // -------------------------------------------------------------------------
-
-    // Incomplete catch-all for test frames generated via category-partition
-    @ParameterizedTest
-    @JsonClasspathSource("s.json")
-    public void testPrettifyDate(
-        @org.junitpioneer.jupiter.json.Property("a") double a,
-        @org.junitpioneer.jupiter.json.Property("b") double b,
-        @org.junitpioneer.jupiter.json.Property("c") double c,
-        @org.junitpioneer.jupiter.json.Property("oracle") Object oracle
-    ) {
-        assertEquals(oracle, oracle);
-    }
 
     // -------------------------------------------------------------------------
     //                          Metamorphic Tests
@@ -62,53 +57,74 @@ public class DateHelperTest {
         long seedTimestamp = 1_792_535_420_000L;
 
         for (DateFormats formatF : DateFormats.values()) {
-            if (formatF.getDateFormat().contains("h") || formatF.getDateFormat().contains("H")) {
+            if (formatF.getDateFormat().contains("h")
+                || formatF.getDateFormat().contains("H")) {
                 continue;
             }
 
             for (DateFormats formatG : DateFormats.values()) {
-                
-                if (formatG.getDateFormat().contains("h") || formatG.getDateFormat().contains("H")) {
+
+                if (formatG.getDateFormat().contains("h")
+                    || formatG.getDateFormat().contains("H")) {
                     continue;
                 }
 
-                String seedF = DateHelper.getDesiredFormat(formatF, seedTimestamp);
+                String seedF =
+                    DateHelper.getDesiredFormat(formatF, seedTimestamp);
 
-                String seedG = 
-                    DateHelper.getDesiredFormat(formatG, parseDate(seedF, formatF));
+                String seedG =
+                    DateHelper.getDesiredFormat(
+                        formatG,
+                        parseDate(seedF, formatF)
+                    );
 
-                String seedReconvertedF = 
-                    DateHelper.getDesiredFormat(formatF, DateHelper.parseDate(seedG, formatG));
+                String seedReconvertedF =
+                    DateHelper.getDesiredFormat(
+                        formatF,
+                        parseDate(seedG, formatG)
+                    );
 
                 assertEquals(seedF, seedReconvertedF);
             }
         }
     }
 
+
     /*
      * Testing for a symmetric relation:
      * The seed is an arbitrary date or datetime string in format F parsed via
      * parseAnyDate into a Long. The follow-up is passing format F and the seed
      * into getDesiredFormat to produce f1. f1 and the original date should be
-     * equal. 
+     * equal.
+     * NOTE: This fails when supplying an ambiguous date with an expected
+     * format... will need to redo or rethink
+     *
      */
-    @Test
-    void testMetamorphicParseDateSymmetry_1() {
+    @ParameterizedTest
+    @JsonClasspathSource("DateFormatTestCases.json")
+    void testMetamorphicParseDateSymmetry_1(
+        @Property("dateStr") String seed,
+        @Property("expectedFormat") String expectedFormat
+    ) {
 
-        String seed = "20/10/26";
+        // seeds are taken from the supplied JSON file.
 
         Long seedTime = DateHelper.parseAnyDate(seed);
 
         // follow-up
 
-        String reformatted = 
-            DateHelper.getDesiredFormat(DateHelper.DateFormats.S_DDMMyy, seedTime);
+        var expectedFormatV =
+          DateHelper.DateFormats.valueOf(expectedFormat);
+
+        String reformatted =
+            DateHelper.getDesiredFormat(expectedFormatV, seedTime);
 
         // System.out.println(seed);
         // System.out.println(reformatted);
 
         assertEquals(seed, reformatted);
     }
+
 
     /*
      * Testing for a constant relation:
@@ -125,19 +141,23 @@ public class DateHelperTest {
         cal.set(2026, Calendar.OCTOBER, 20, 9, 30, 0);
 
         Long seed = cal.getTimeInMillis();
-        
+
         // follow-up case
         // adding one day to the calendar to ...
         cal.add(Calendar.DAY_OF_MONTH, 1);
 
         Long followUp = cal.getTimeInMillis();
 
-        assertEquals(DateHelper.getTimeOnly(seed), DateHelper.getTimeOnly(followUp));
+        assertEquals(
+            DateHelper.getTimeOnly(seed),
+            DateHelper.getTimeOnly(followUp)
+        );
     }
+
 
     /*
      * Testing for a constant relation:
-     * The seed is a given datetime. The followup case is a datetime at a 
+     * The seed is a given datetime. The followup case is a datetime at a
      * different time of day. The result of calling getTimeOnly() on the seed
      * and the followup should NOT be equal.
      */
@@ -146,7 +166,7 @@ public class DateHelperTest {
 
         // seed
 
-        long seed = 1_792_535_420_000L; // Fixed timestamp for repeatable results
+        long seed = 1_792_535_420_000L; // 20 October 2026 22:30:20
 
         String seedDateTime = DateHelper.getDateAndTime(seed);
 
@@ -158,6 +178,7 @@ public class DateHelperTest {
 
         assertEquals(seedDateTime, followupDateTime);
     }
+
 
     /**
      * Testing for a constant relation:
@@ -192,6 +213,7 @@ public class DateHelperTest {
         assertEquals(seedTimeStamp, followTimeStamp);
     }
 
+
     /**
      * Testing for a constant relation:
      * Passing an initial date D1 to getDateOnly()
@@ -216,16 +238,19 @@ public class DateHelperTest {
         String seedDateTime = DateHelper.getDateAndTime(seed);
         String followDateTime = DateHelper.getDateAndTime(followup);
 
-        // String seedDateTimeFromString = DateHelper.getDateAndTime(Long.toString(seed));
-        // String followDateTimeFromString = DateHelper.getDateAndTime(Long.toString(followup));
+        // String seedDateTimeFromString =
+        //    DateHelper.getDateAndTime(Long.toString(seed));
+        // String followDateTimeFromString =
+        //  DateHelper.getDateAndTime(Long.toString(followup));
 
         assertNotEquals(seedDateTime, followDateTime);
         // assertNotEquals(seedDateTimeFromString, followDateTimeFromString);
     }
 
+
     /*
      * Testing for a changing relation:
-     * The seed is two different time stamps s1 and s2. The followup case is 
+     * The seed is two different time stamps s1 and s2. The followup case is
      * the value of
      * s2 plus a minimum of 60,000 milliseconds. The number of minutes between
      * s1 and s2 and s1 and the followup should NOT be equal.
@@ -237,29 +262,32 @@ public class DateHelperTest {
 
         // seed case
 
-        long seed1 = 1_792_535_420_000L;
+        long seed1 = 1_792_535_420_000L;  // 20 October 2026 22:30:20
         long seed2 = 1_792_535_480_000L;
 
-        String seedString1 = DateHelper.getDesiredFormat(format, seed1);
-        String seedString2 = DateHelper.getDesiredFormat(format, seed2);
+        String seedStr1 = DateHelper.getDesiredFormat(format, seed1);
+        String seedStr2 = DateHelper.getDesiredFormat(format, seed2);
 
-        Long seedDiff = DateHelper.getMinutesBetweenTwoDates(seedString1, seedString2, format);
+        Long seedDiff =
+            DateHelper.getMinutesBetweenTwoDates(seedStr1, seedStr2, format);
 
         // follow-up case
 
         long followup = seed2 + 60_000L;
-        String followupString = DateHelper.getDesiredFormat(format, followup);
+        String followupStr = DateHelper.getDesiredFormat(format, followup);
 
-        Long followupDiff = DateHelper.getMinutesBetweenTwoDates(seedString1, followupString, format);
+        Long followupDiff =
+            DateHelper.getMinutesBetweenTwoDates(seedStr1, followupStr, format);
 
         assertNotEquals(seedDiff, followupDiff);
     }
 
+
     /*
      * Testing for a linear relation:
-     * The seed is two different time stamps s1 and s2. The followup case 
+     * The seed is two different time stamps s1 and s2. The followup case
      * consists of f1 and f2 which are calculated by s1 + c and s2 + c
-     * respectively, where c is a constant with a minimum calue of 60,000 
+     * respectively, where c is a constant with a minimum calue of 60,000
      * milliseconds. The result of getMinutesBetweenTwoDates() on {s1, s2}
      * and then on {f1, f2} should be equal.
      */
@@ -270,25 +298,32 @@ public class DateHelperTest {
 
         // seed case
 
-        long seed1 = 1_792_535_420_000L; // Fixed timestamp for repeatable results
-        long seed2 = 1_792_535_480_000L; // Fixed timestamp for repeatable results
+        long seed1 = 1_792_535_420_000L; // 20 October 2026 22:30:20
+        long seed2 = 1_792_535_480_000L;
 
-        String seedString1 = DateHelper.getDesiredFormat(format, seed1);
-        String seedString2 = DateHelper.getDesiredFormat(format, seed2);
+        String seedStr1 = DateHelper.getDesiredFormat(format, seed1);
+        String seedStr2 = DateHelper.getDesiredFormat(format, seed2);
 
-        Long seedDiff = DateHelper.getMinutesBetweenTwoDates(seedString2, seedString1, format);
+        Long seedDiff =
+            DateHelper.getMinutesBetweenTwoDates(seedStr2, seedStr1, format);
 
         // follow-up case
 
         long followup1 = seed1 + 60_000L;
         long followup2 = seed2 + 60_000L;
-        String followupString1 = DateHelper.getDesiredFormat(format, followup1);
-        String followupString2 = DateHelper.getDesiredFormat(format, followup2);
+        String followupStr1 = DateHelper.getDesiredFormat(format, followup1);
+        String followupStr2 = DateHelper.getDesiredFormat(format, followup2);
 
-        Long followupDiff = DateHelper.getMinutesBetweenTwoDates(followupString2, followupString1, format);
+        Long followupDiff =
+            DateHelper.getMinutesBetweenTwoDates(
+                followupStr2,
+                followupStr1,
+                format
+            );
 
         assertEquals(seedDiff, followupDiff);
     }
+
 
     @Test
     void testMetamorphicHoursDiffChange_1() {
@@ -297,20 +332,22 @@ public class DateHelperTest {
 
         // seed case
 
-        long seed1 = 1_792_535_420_000L;
+        long seed1 = 1_792_535_420_000L;  // 20 October 2026 22:30:20
         long seed2 = 1_792_535_485_000L;
 
-        String seedString1 = DateHelper.getDesiredFormat(format, seed1);
-        String seedString2 = DateHelper.getDesiredFormat(format, seed2);
+        String seedStr1 = DateHelper.getDesiredFormat(format, seed1);
+        String seedStr2 = DateHelper.getDesiredFormat(format, seed2);
 
-        Long seedDiff = DateHelper.getHoursBetweenTwoDate(seedString1, seedString2, format);
+        Long seedDiff =
+            DateHelper.getHoursBetweenTwoDate(seedStr1, seedStr2, format);
 
         // follow-up case
 
         long followup = seed2 + 3_600_000L;
-        String followupString = DateHelper.getDesiredFormat(format, followup);
+        String followupStr = DateHelper.getDesiredFormat(format, followup);
 
-        Long followupDiff = DateHelper.getHoursBetweenTwoDate(seedString1, followupString, format);
+        Long followupDiff =
+            DateHelper.getHoursBetweenTwoDate(seedStr1, followupStr, format);
 
         assertNotEquals(seedDiff, followupDiff);
     }
@@ -323,37 +360,43 @@ public class DateHelperTest {
 
         String todaytemp = DateHelper.getToday();
 
-        long todayTimestamp = DateHelper.parseDate(todaytemp, DateHelper.DateFormats.S_DDMMYYYY);
+        long todayTimestamp =
+            DateHelper.parseDate(todaytemp, DateHelper.DateFormats.S_DDMMYYYY);
+
         String today = DateHelper.getDesiredFormat(format, todayTimestamp);
 
         int seedDiff = 7;
 
         String future = DateHelper.getDateFromDays(seedDiff);
 
-        Long followupDiff = DateHelper.getDaysBetweenTwoDate(future, today, format);
+        Long followupDiff =
+            DateHelper.getDaysBetweenTwoDate(future, today, format);
 
         assertNotEquals(today, future);
         assertEquals(Long.valueOf(seedDiff), followupDiff);
     }
 
+
     // Edge case: precisesly before midnight
     @Test
     void testMetamorphicTodayTomorrowDiffConstant_1() {
 
-        DateHelper.DateFormats format = DateHelper.DateFormats.S_DDMMyy;
+        DateFormats format = DateFormats.S_DDMMyy;
 
         String today = DateHelper.getToday();
         String tomorrow = DateHelper.getTomorrow();
 
         int diff = 1;
 
-        Long followupDiff = DateHelper.getDaysBetweenTwoDate(tomorrow, today, format);
+        Long followupDiff =
+            DateHelper.getDaysBetweenTwoDate(tomorrow, today, format);
 
         System.out.println(followupDiff);
 
         assertNotEquals(today, tomorrow);
         assertEquals(Long.valueOf(diff), followupDiff);
     }
+
 
     /*
      * Testing for a constant relation:
@@ -373,12 +416,65 @@ public class DateHelperTest {
         String todayTimeStamp = DateHelper.getTodayWithTime();
 
 
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat format =
+            new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+
         Date parsedTimeStamp = format.parse(todayTimeStamp);
 
         String followDate = DateHelper.getDateOnly(parsedTimeStamp.getTime());
 
         assertEquals(todayDate, followDate);
     }
+
+    // -------------------------------------------------------------------------
+    //                          Combinatorial Tests
+    // -------------------------------------------------------------------------
+
+    @ParameterizedTest
+    @JsonClasspathSource("getDateOnly-combinatorial.json")
+    public void testCombinatorialGetDateOnly(
+        @org.junitpioneer.jupiter.json.Property("time") long time
+    ) {
+
+        String expectedTime = Instant.ofEpochMilli(time)
+            .atZone(ZoneId.systemDefault())
+            .format(DateTimeFormatter.ofPattern(
+                "dd/MM/yyyy", Locale.getDefault()
+            ));
+
+        String actualTime = DateHelper.getDateOnly(time);
+
+        assertEquals(actualTime, expectedTime);
+    }
+
+
+    @ParameterizedTest
+    @JsonClasspathSource("getDateAndTime-combinatorial.json")
+    public void testCombinatorialGetDateAndTime(
+        @org.junitpioneer.jupiter.json.Property("time") long time
+    ) {
+
+        String expectedDateTime = Instant.ofEpochMilli(time)
+            .atZone(ZoneId.systemDefault())
+            .format(DateTimeFormatter.ofPattern(
+                "dd/MM/yyyy, hh:mm a", Locale.getDefault()
+            ));
+
+        String actualDateTime = DateHelper.getDateAndTime(time);
+
+        assertEquals(actualDateTime, expectedDateTime);
+    }
+
+    // These are all the tests for combinatorial testing; we could not target
+    // methods with 0 parameters with combinatorial testing as there are no
+    // combinations to generate.
+    // This leaves out the following methds:
+    // - getTodayWithTime()
+    // - getToday()
+    // - getTomorrow()
+
+    // -------------------------------------------------------------------------
+    //                      Category-Partition Testing
+    // -------------------------------------------------------------------------
 
 }

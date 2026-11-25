@@ -11,7 +11,7 @@ tempsrc
 
 # project-specific but for compilation
 local.properties
-
+gradle.properties
 
 # outputs
 build

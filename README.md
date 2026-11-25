@@ -1,4 +1,4 @@
-# Comparing Automated Test Cases for Combinatorial, Categorical, and Metamorphic Testing
+# Comparing Combinatorial, Categorical, and Metamorphic Test Coverages
 
 This project uses JDK 17, Gradle 8.14, and Python. Required packages and versions are
 defined in ```build.gradle```.
@@ -7,7 +7,7 @@ defined in ```build.gradle```.
 
 The two case studies are placed in ```src/main/java/sysc```.
 
-My test implementations are located in ```src/test/java/sysc``` and the resource files 
+My test implementations are located in ```src/test/java/sysc``` and the resource files
 used by the test files are located in ```src/test/resources```.
 
 The test case generator is implemented in generator.py at the project root. The generator
@@ -24,7 +24,7 @@ To run all JUnit tests
 .\gradlew.bat test
 ```
 
-To run all JUnit tests and generate a Jacoco coverage report (HTML) 
+To run all JUnit tests and generate a Jacoco coverage report (HTML)
 ```shell
 .\gradlew.bat test jacocoTestReport
 ```
@@ -41,6 +41,12 @@ To run tests with the coverage report on pitest mutations:
 
 ```shell
 .\gradlew.bat test --tests "sysc.DateHelperTest.testMetamorphic*"
+```
+
+### Combinatorial Test Suite
+
+```shell
+.\gradlew.bat test --tests "sysc.DateHelperTest.testCombinatorial*"
 ```
 
 ### Other Commands

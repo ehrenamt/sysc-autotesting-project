@@ -10,154 +10,115 @@ models.
 """
 
 # Python standard library imports
+from enum import Enum
 import io
 import os
 import json
-import argparse
-
 import sys
 
 # PyPI imports
 import pandas as pd
-# from pandas.errors import ParserError
 from sympy import symbols, reduce_inequalities, Eq, solve_univariate_inequality
 
 
-def write_cases(in_filename, out_filename):
+class ArgType(str, Enum):
+    '''
+    LongStr refers to a "long-as-a-string" data type exclusively for the
+    DateHelper methods, to indicate the data type semantically should be a
+    long, but is actually a String.
+    '''
 
-    data = []
-
-
-    for a, b, c in [
-        ("5", "0", "2"),
-        ("0.5", "1", "2"),
-        ("2", "4", "2"),
-        ("-10", "13", "2"),
-    ]:
-        data.append({
-            "a": a,
-            "b": b,
-            "c": c,
-            "oracle": 10,
-        })
-
-    with open(out_filename, "w") as file:
-        json.dump(data, file, indent=2)
-
-def write_tests(out_filename, data):
-
-    data = []
+    LLONG = "long"
+    LONG = "Long"
+    LONGSTR = "longStr"
+    INT = "int"
+    DATETIMESTR = "DateTimeString"
 
 
-    for a, b, c in [
-        ("5", "0", "2"),
-        ("0.5", "1", "2"),
-        ("2", "4", "2"),
-        ("-10", "13", "2"),
-    ]:
-        data.append({
-            "a": a,
-            "b": b,
-            "c": c,
-            "oracle": 10,
-        })
+def write_tests(out_filename, function_name, frames):
+
+    data = [{arg_name: case} for arg_name, case in frames]
 
     with open(out_filename, "w") as file:
-        json.dump(data, file, indent=2)
+        json.dump(data, file, indent=4)
 
 
-def partition_all(data):
+def combinatorial_solver(data):
 
-    cases = []
+    print(data)
 
-    statements = data["cf_relations"]
+    frames = []
 
-    for statement in data["cf_relations"]:
-        print(statement)
+    for arg_name, arg_type in data.items():
 
-    return 1, 2, 3
+        test_cases = []
+
+        match arg_type:
+
+            case ArgType.LONG:
+                test_cases = [
+                    -1,
+                    0,
+                    1720875040000,
+                    # 9223372036854775807,
+                    # -9223372036854775807
+                ]
+
+            case ArgType.LLONG:
+                test_cases = [
+                    -1,
+                    0,
+                    1720875040000,
+                    # 9223372036854775807,
+                    # -9223372036854775807
+                ]
 
 
-def generate_categorical(target: str):
+            case ArgType.LONGSTR:
+                test_cases = [
+                    "-1",
+                    "0",
+                    "1720875040000",
+                    "",
+                    # 9223372036854775807,
+                    # -9223372036854775807
+                ]
 
-    # steps (no error checking)
-    # read the target as json.
-    # each top level KV pair is an entry function, with the key = function name.
-    # so for each top level KV pair (function name):
-    # we take its value and pass it into a "partition" function
-    # we take the OUTPUT 
-    # and pass the output to wrte_output
-    # with {key}.json as the filename
-    
+
+        for case in test_cases:
+            frame = (arg_name, case)
+            frames.append(frame)
+
+    return frames
+
+
+def generate_combinatorial(target: str):
+
     with open(target, "r", encoding="utf-8") as f:
         model = json.load(f)
 
-
     for function_name, function_data in model.items():
-        partitioned_cases = partition_all(function_data)
-        write_tests(f"{function_name}.json", partitioned_cases)
+        args = function_data['argtypes']
+        partitioned_cases = combinatorial_solver(args)
+        write_tests(
+            f"src/test/resources/{function_name}-combinatorial.json",
+            function_name,
+            partitioned_cases
+        )
 
-    # solveq = model["solveQuadratic"]
 
-    # print(solveq)
-
-
-# refactor main: first arg is an actual filepath string to the model (no error checking needed)
-# and second remains the testing type
 def main(*args):
 
-    # temp
-    a, b, c = symbols("a b c", real=True)
-    lhs = b**2 - 4*a*c
-    rhs = 0
+    print("BEGIN test frame generation for DateHelper")
 
-    conditions = {
-        ">": lhs > rhs,
-        "<": lhs < rhs,
-        "==": Eq(lhs, rhs),
-    }
+    print("BEGIN COMBINATORIAL test generation for DateHelper")
 
-    # for op, condition in conditions.items():
-    #     print(op, reduce_inequalities(condition, b))
+    generate_combinatorial("./genresources/datehelper-textmodel.json")
 
-    b = symbols("b", real=True)
+    print("END COMBINATORIAL test generation for DateHelper")
 
-    expr = b**2 - 4 * 1 * 1  # a=1, c=1
-    solution = solve_univariate_inequality(expr > 0, b)
-
-    print(solution)
-    print(type(solution))
-
-    target = args[0] if args else "quad"
-    print(f"Target: {target}")
-
-    test_type = args[1] if args else "combinatorial"
-
-    print(f"Type: {test_type}")
-
-    if target == "quad":
-
-        match test_type:
-
-            case "combinatorial":
-                print("Generating combinatoria tests for Quadratic.Java")
-
-            case "metamorphic":
-                print("Generating metamorphic tests for Quadratic.Java")
-
-            case "categorical":
-                print("Generating category-partition tests for Quadratic.Java")
-                generate_categorical("quadratic-textmodel.json")
-                # write_cases(target, "categorical_suite.json")
-            
-            case _ :
-                pass
-            
+    print("Test case generation for DateHelper completed.")
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:])
-
-
-# write_cases("src/test/resources/categorical_suite.json")
-
+    main()
