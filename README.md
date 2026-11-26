@@ -16,7 +16,7 @@ run a test suite and view the reports to measure how well the generated cases ac
 
 ### Raw Data
 
-The generated test cases are all places in ```src/test/resources``` as JSON
+The generated test cases are all placed in ```src/test/resources``` as JSON
 files.
 
 ### Implemented Tests
@@ -45,19 +45,19 @@ The JaCoCo test report will be located at ```/build/reports/jacoco/test/html/ind
 To run tests with the coverage report on pitest mutations:
 
 ```shell
-.\gradlew.bat test jacocoTestReport pitest
+.\gradlew test jacocoTestReport pitest
 ```
 
 ### Metamorphic Test Suite
 
 ```shell
-.\gradlew.bat test --tests "sysc.DateHelperTest.testMetamorphic*"
+.\gradlew test --tests "sysc.DateHelperTest.testMetamorphic*"
 ```
 
 ### Combinatorial Test Suite
 
 ```shell
-.\gradlew.bat test --tests "sysc.DateHelperTest.testCombinatorial*"
+.\gradlew test --tests "sysc.DateHelperTest.testCombinatorial*"
 ```
 
 ## Tools

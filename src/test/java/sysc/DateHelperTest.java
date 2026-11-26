@@ -431,8 +431,8 @@ public class DateHelperTest {
     // -------------------------------------------------------------------------
 
     @ParameterizedTest
-    @JsonClasspathSource("getDateOnly-combinatorial.json")
-    public void testCombinatorialGetDateOnly(
+    @JsonClasspathSource("getDateOnly0-combinatorial.json")
+    public void testCombinatorialGetDateOnlyLong(
         @org.junitpioneer.jupiter.json.Property("time") long time
     ) {
 
@@ -448,9 +448,29 @@ public class DateHelperTest {
     }
 
 
+    // TODO check why cannot accept String
+    // @ParameterizedTest
+    // @JsonClasspathSource("getDateOnly1-combinatorial.json")
+    // public void testCombinatorialGetDateOnlyString(
+    //     @org.junitpioneer.jupiter.json.Property("time") String time
+    // ) {
+    //
+    //     Long timeLong = Long.parseLong(time);
+    //     String expectedTime = Instant.ofEpochMilli(timeLong)
+    //         .atZone(ZoneId.systemDefault())
+    //         .format(DateTimeFormatter.ofPattern(
+    //             "dd/MM/yyyy", Locale.getDefault()
+    //         ));
+    //
+    //     String actualTime = DateHelper.getDateOnly(time);
+    //
+    //     assertEquals(actualTime, expectedTime);
+    // }
+
+
     @ParameterizedTest
-    @JsonClasspathSource("getDateAndTime-combinatorial.json")
-    public void testCombinatorialGetDateAndTime(
+    @JsonClasspathSource("getDateAndTime0-combinatorial.json")
+    public void testCombinatorialGetDateAndTimeLong(
         @org.junitpioneer.jupiter.json.Property("time") long time
     ) {
 
@@ -464,6 +484,24 @@ public class DateHelperTest {
 
         assertEquals(actualDateTime, expectedDateTime);
     }
+
+
+    // @ParameterizedTest
+    // @JsonClasspathSource("getDateAndTime1-combinatorial.json")
+    // public void testCombinatorialGetDateAndTimeString(
+    //     @org.junitpioneer.jupiter.json.Property("time") String time
+    // ) {
+    //
+    //     String expectedDateTime = Instant.ofEpochMilli(Long.parseLong(time))
+    //         .atZone(ZoneId.systemDefault())
+    //         .format(DateTimeFormatter.ofPattern(
+    //             "dd/MM/yyyy, hh:mm a", Locale.getDefault()
+    //         ));
+    //
+    //     String actualDateTime = DateHelper.getDateAndTime(time);
+    //
+    //     assertEquals(actualDateTime, expectedDateTime);
+    // }
 
     // These are all the tests for combinatorial testing; we could not target
     // methods with 0 parameters with combinatorial testing as there are no
