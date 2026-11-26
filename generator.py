@@ -12,15 +12,13 @@ models.
 # Python standard library imports
 from enum import Enum
 import io
-from itertools import product
+from itertools import cycle, product
 import os
 import json
 import sys
 
 # PyPI imports
-import pandas as pd
-from sympy import symbols, reduce_inequalities, Eq, solve_univariate_inequality
-
+from allpairspy import AllPairs
 
 # possible long values?
 # -9223372036854775807
@@ -53,6 +51,7 @@ class ArgType(str, Enum):
     DATETIMESTR = "DateTimeString"
     DATETIMESTRFORMAT = "DateTimeStringAsFormat"
     DATEFORMATS = "DateFormats"
+    DOUBLE = "Double"
     LLONG = "long"
     LONG = "Long"
     LONGSTR = "longStr"
@@ -65,6 +64,81 @@ def write_tests(out_filename, frames):
         json.dump(frames, file, indent=4)
 
 
+def match_type(arg_type):
+
+    test_cases = []
+
+    match arg_type:
+
+        case ArgType.DOUBLE:
+            test_cases = [-1.0, 0.0 , 9223372036854775807.0]
+
+        case ArgType.LONG:
+            test_cases = [
+                -1,
+                0,
+                1720875040000,
+            ]
+
+        case ArgType.LLONG:
+            test_cases = [
+                -1,
+                0,
+                1720875040000,
+            ]
+
+        case ArgType.LONGSTR:
+            test_cases = [
+                "-1",
+                "0",
+                "1720875040000",
+                # "",
+            ]
+
+        case ArgType.DATEFORMATS:
+            test_cases = [
+                "D_DDMMyy",
+                "D_YYYYMMDD_N"
+            ]
+
+        case ArgType.DATETIMESTR:
+            test_cases = [
+                "20-10-25",
+            ]
+
+    return test_cases
+
+
+def category_partition_solver(data):
+
+    frames = []
+    possible_vals = []
+    arg_order = []
+
+    for arg_name, arg_type in data.items():
+
+        arg_order.append(arg_name)
+
+        test_cases = match_type(arg_type)
+
+        possible_vals.append(test_cases)
+
+    max_possible_values = max(len(vallist) for vallist in possible_vals)
+    cycles = [cycle(val) for val in possible_vals]
+
+
+    for _ in range(max_possible_values):
+        temp = []
+
+        for vallist in cycles:
+            temp.append(next(vallist))
+
+        frame = dict(zip(arg_order, temp))
+        frames.append(frame)
+
+    return frames
+
+
 def combinatorial_solver(data):
 
     frames = []
@@ -74,47 +148,20 @@ def combinatorial_solver(data):
     for arg_name, arg_type in data.items():
 
         test_cases = []
+        test_cases = match_type(arg_type)
         arg_order.append(arg_name)
-
-        match arg_type:
-
-            case ArgType.LONG:
-                test_cases = [
-                    -1,
-                    0,
-                    1720875040000,
-                ]
-
-            case ArgType.LLONG:
-                test_cases = [
-                    -1,
-                    0,
-                    1720875040000,
-                ]
-
-            case ArgType.LONGSTR:
-                test_cases = [
-                    "-1",
-                    "0",
-                    "1720875040000",
-                    # "",
-                ]
-
-            case ArgType.DATEFORMATS:
-                test_cases = [
-                    "D_DDMMyy",
-                    "D_YYYYMMDD_N"
-                ]
-
-            case ArgType.DATETIMESTR:
-                test_cases = [
-                    "20-10-25",
-                ]
 
         possible_vals.append(test_cases)
 
     # pairwise_seen = set()
     arg_product = product(*possible_vals)
+
+
+    # guard | combinations only needed if more than one parameter
+    if len(possible_vals) > 1:
+        arg_pairwise_product = AllPairs(possible_vals)
+
+        print(list(arg_pairwise_product))
 
     for combination in arg_product:
         frames.append(dict(zip(arg_order, combination)))
@@ -130,17 +177,33 @@ def generate_combinatorial(target: str):
     for function_name, function_data in model.items():
         args = function_data['argtypes']
 
-        partitioned_cases = combinatorial_solver(args)
+        combinatorial_frames = combinatorial_solver(args)
         write_tests(
             f"src/test/resources/{function_name}-combinatorial.json",
-            partitioned_cases
+            combinatorial_frames
+        )
+
+
+def generate_category_partition_frames(target: str):
+
+    with open(target, "r", encoding="utf-8") as f:
+        model = json.load(f)
+
+    for function_name, function_data in model.items():
+        args = function_data['argtypes']
+
+        partitioned_frames = category_partition_solver(args)
+        write_tests(
+            f"src/test/resources/{function_name}-category-partition.json",
+            partitioned_frames
         )
 
 
 def main(*args):
 
+    # TODO time generations. Maybe with a script?
 
-    # TODO time generations
+    print("-------------------------------------------------------------------")
     print("BEGIN test frame generation for DateHelper")
 
     print("BEGIN COMBINATORIAL test generation for DateHelper")
@@ -148,8 +211,26 @@ def main(*args):
     generate_combinatorial("./genresources/datehelper-textmodel.json")
 
     print("END COMBINATORIAL test generation for DateHelper")
+    print("BEGIN CATEGORY-PARTITION test generation for DateHelper")
+
+    generate_category_partition_frames(
+        "./genresources/datehelper-textmodel.json"
+    )
+
+    print("END CATEGORY-PARTITION test generation for DateHelper")
+    print("BEGIN COMBINATORIAL test generation for Quadratic")
+
+    generate_combinatorial("./genresources/quadratic-textmodel.json")
+
+    print("END COMBINATORIAL test generation for Quadratic")
+    print("BEGIN CATEGORY-PARTITION test generation for Quadratic")
+
+    generate_category_partition_frames(
+        "./genresources/quadratic-textmodel.json"
+    )
 
     print("Test case generation for DateHelper completed.")
+    print("-------------------------------------------------------------------")
 
 
 if __name__ == "__main__":

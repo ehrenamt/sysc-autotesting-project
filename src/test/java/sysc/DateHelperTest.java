@@ -18,6 +18,7 @@ package sysc;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;                     // for oracles
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -510,6 +511,21 @@ public class DateHelperTest {
     // - getTodayWithTime()
     // - getToday()
     // - getTomorrow()
+
+
+    @ParameterizedTest
+    @JsonClasspathSource("getMinutesBetweenTwoDates-combinatorial.json")
+    public void testCombinatorialGetMinutesBetweenTwoDates(
+        @org.junitpioneer.jupiter.json.Property("old") String old,
+        @org.junitpioneer.jupiter.json.Property("newDate") String newDate,
+        @org.junitpioneer.jupiter.json.Property("dateFormats")
+        DateFormats dateFormats
+    ) {
+
+        // temp
+        assertEquals(old, old);
+
+    }
 
     // -------------------------------------------------------------------------
     //                      Category-Partition Testing

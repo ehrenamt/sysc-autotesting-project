@@ -1,5 +1,6 @@
 {
     "solveQuadratic": {
+        "function_name": "solveQuadratic",
         "argtypes" : {
             "a": "Double",
             "b": "Double",
@@ -19,7 +20,7 @@
                     "operand": "b*b - 4*a*c",
                     "rightoperand": "b*b"
                 }
-            } 
+            }
         ],
         "out_relation": [
         ],

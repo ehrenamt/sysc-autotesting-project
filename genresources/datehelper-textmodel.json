@@ -29,7 +29,7 @@
         },
         "throws": []
     },
-    "getMinutesBetweenTwoDates0": {
+    "getMinutesBetweenTwoDates": {
         "function_name": "getMinutesBetweenTwoDates",
         "argtypes" : {
             "old": "DateTimeString",
