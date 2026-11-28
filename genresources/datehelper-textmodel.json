@@ -29,6 +29,31 @@
         },
         "throws": []
     },
+    "getTimeOnly": {
+        "function_name": "getTimeOnly",
+        "argtypes" : {
+            "time": "long"
+        },
+        "throws": []
+    },
+    "getDaysBetweenTwoDates": {
+        "function_name": "getDaysBetweenTwoDates",
+        "argtypes" : {
+            "old": "DateTimeString",
+            "newDate": "DateTimeString",
+            "dateFormats": "DateFormats"
+        },
+        "throws": "ParseException"
+    },
+    "getHoursBetweenTwoDates": {
+        "function_name": "getHoursBetweenTwoDates",
+        "argtypes" : {
+            "old": "DateTimeString",
+            "newDate": "DateTimeString",
+            "dateFormats": "DateFormats"
+        },
+        "throws": "ParseException"
+    },
     "getMinutesBetweenTwoDates": {
         "function_name": "getMinutesBetweenTwoDates",
         "argtypes" : {
@@ -36,6 +61,6 @@
             "newDate": "DateTimeString",
             "dateFormats": "DateFormats"
         },
-        "throws": []
+        "throws": "ParseException"
     }
 }

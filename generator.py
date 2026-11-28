@@ -1,4 +1,5 @@
 """
+AI LABEL: No AI was used in this file.
 --------------------------------------------------------------------------------
 generator.py
 
@@ -51,9 +52,10 @@ class ArgType(str, Enum):
     DATETIMESTR = "DateTimeString"
     DATETIMESTRFORMAT = "DateTimeStringAsFormat"
     DATEFORMATS = "DateFormats"
+    DATEFORMATSPARSEABLE = "DateFormatsParseable"
     DOUBLE = "Double"
-    LLONG = "long"
-    LONG = "Long"
+    DOUBLESTR = "DoubleString"
+    LONG = "long"
     LONGSTR = "longStr"
     INT = "int"
 
@@ -73,14 +75,10 @@ def match_type(arg_type):
         case ArgType.DOUBLE:
             test_cases = [-1.0, 0.0 , 9223372036854775807.0]
 
-        case ArgType.LONG:
-            test_cases = [
-                -1,
-                0,
-                1720875040000,
-            ]
+        case ArgType.DOUBLESTR:
+            test_cases = ["-1.0", "0.0", "9223372036854775807.0"]
 
-        case ArgType.LLONG:
+        case ArgType.LONG:
             test_cases = [
                 -1,
                 0,
@@ -92,12 +90,20 @@ def match_type(arg_type):
                 "-1",
                 "0",
                 "1720875040000",
-                # "",
             ]
 
         case ArgType.DATEFORMATS:
             test_cases = [
+                "D_YYMMDD",
                 "D_DDMMyy",
+                "D_YYMMDD_N",
+                "D_DDMMyy_N",
+                "D_YYMMDDHHMMA_N",
+                "D_DDMMyyHHMMA_N",
+                "S_YYMMDD",
+                "S_DDMMyy",
+                "S_YYMMDDHHMMA",
+                "S_DDMMyyHHMMA",
                 "D_YYYYMMDD_N"
             ]
 
