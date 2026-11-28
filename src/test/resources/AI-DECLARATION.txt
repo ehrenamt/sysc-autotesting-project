@@ -1,0 +1,5 @@
+AI DECLARATION:
+
+No AI tools were used to create these test resources.
+All files in this folder are either hand-written metamorphic test cases,
+or automatically generated via the main function in generator.py

@@ -44,6 +44,13 @@ class ArgType(str, Enum):
 
     -   DATETIMESTR is a String specifically expected to be in a DateTimeFormat
         i.e. 20/06/2011
+    -   DATEFORMATSPARSEABLE contains only the formats which can be parsed into
+        a UNIX timestamp and then converted into its original format exactly.
+        Not all DateFormats meet this criterion, due to certain groups of
+        DateFormats being indiscernible. However, some methods depend on this
+        behaviour when testing (to produce oracles) which necessitates a
+        separate "type" or different "blocks" in the context of
+        category-partition testing.
     -   LONGSTR refers to a "long-as-a-string" data type exclusively for the
         DateHelper methods, to indicate the data type semantically should be a
         long, but is actually a String.
@@ -105,6 +112,12 @@ def match_type(arg_type):
                 "S_YYMMDDHHMMA",
                 "S_DDMMyyHHMMA",
                 "D_YYYYMMDD_N"
+            ]
+
+        case ArgType.DATEFORMATS:
+            test_cases = [
+                "D_DDMMyy",
+                "S_DDMMyy",
             ]
 
         case ArgType.DATETIMESTR:

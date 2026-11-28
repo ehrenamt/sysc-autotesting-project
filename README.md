@@ -51,13 +51,19 @@ To run tests with the coverage report on pitest mutations:
 ### Metamorphic Test Suite
 
 ```shell
-.\gradlew test --tests "sysc.DateHelperTest.testMetamorphic*"
+.\gradlew test --tests "sysc.*.testMetamorphic*"
 ```
 
 ### Combinatorial Test Suite
 
 ```shell
-.\gradlew test --tests "sysc.DateHelperTest.testCombinatorial*"
+.\gradlew test --tests "sysc.*.testCombinatorial*"
+```
+
+### Category-Partition Test Suite
+
+```shell
+.\gradlew test --tests "sysc.*.testCategoryPartition*"
 ```
 
 ## Tools

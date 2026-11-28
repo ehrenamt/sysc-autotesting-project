@@ -13,8 +13,11 @@ tempsrc
 local.properties
 gradle.properties
 
-# outputs
+# Java and Python outputs
 build
+src/test/resources/*partition.json
+src/test/resources/*combinatorial.json
+
 
 # other
 code.iml
